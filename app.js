@@ -1,5 +1,6 @@
 
 // mongoDB connection: mongodb+srv://Fell:<PASSWORD>@cluster0-gztad.mongodb.net/test?retryWrites=true
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -10,7 +11,7 @@ const routesStuff = require('./routes/stuff');
 const app = express();
 
 //Mongoose connection:
-mongoose.connect('mongodb+srv://Fell:process.env.PASSWORD@cluster0-gztad.mongodb.net/test?retryWrites=true')
+mongoose.connect(`mongodb+srv://Fell:${process.env.PASSWORD}@cluster0-gztad.mongodb.net/test?retryWrites=true`, { useNewUrlParser: true })
 .then(() => {
   console.log("Successfully connected to MongoDB Atlas")
 })
