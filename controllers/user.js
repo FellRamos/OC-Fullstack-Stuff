@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 
 // hash e uma funcao de bcrypt.
 exports.signup = (req, res, next) => {
-  bcrypt.hash(req.body.password, 10) // 10 e o "nivel" de encriptacao..  
+  bcrypt.hash(req.body.password, 10) // 10 e o "nivel" de encriptacao..
   .then( (hash) => {
     // usamos o modelo de user
     const user = new User({
@@ -48,13 +48,13 @@ exports.login = (req, res, next) => {
         });
       }
       // Se o user+pass estiverem corretos, criamos token
-      const token = jwt.sign( 
+      const token = jwt.sign(
         {userId: user._id},
         'RANDOM_TOKEN_SECRET',
         {expiresIn: '24h'}
       );
       res.status(200).json({
-        userId: _id,
+        userId: user._id,
         token: token
       });
     })
@@ -69,4 +69,4 @@ exports.login = (req, res, next) => {
       error: error
     });
   });
-};
+}

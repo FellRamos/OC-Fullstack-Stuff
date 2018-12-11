@@ -1,12 +1,19 @@
 const Thing = require('../models/thing');
+const fs = require('fs');
 
+// POST
 exports.createThing = (req, res, next) => {
+
+  req.body.thing = JSON.parse(req.body.thing);
+
+  const url = req.protocol + '://' + req.get('host');
+
   const thing = new Thing({
-    title: req.body.title,
-    description: req.body.description,
-    imageUrl: req.body.imageUrl,
-    price: req.body.price,
-    userId: req.body.userId
+    title: req.body.thing.title,
+    description: req.body.thing.description,
+    imageUrl: url + '/images/' + req.file.filename,
+    price: req.body.thing.price,
+    userId: req.body.thing.userId
   });
   thing.save()
   .then( () => {
@@ -18,9 +25,10 @@ exports.createThing = (req, res, next) => {
     res.status(400).json({
       error: error
     });
-  })  
+  })
 };
 
+// GET (one thing)
 exports.getThing = (req, res, next) => {
   Thing.findOne({
     _id: req.params.id
@@ -35,16 +43,33 @@ exports.getThing = (req, res, next) => {
   })
 };
 
-
+// PUT
 exports.updateThing = (req, res, next) => {
-  const thing = new Thing({
-    _id: req.params.id,
-    title: req.body.title,
-    description: req.body.description,
-    imageUrl: req.body.imageUrl,
-    price: req.body.price,
-    userId: req.body.userId
-  });
+  let thing = new Thing({ _id: req.params._id });
+  if(req.file) {
+    req.body.thing = JSON.parse(req.body.thing);
+    const url = req.protocol + '://' + req.get('host');
+
+    thing = {
+      _id: req.params.id,
+      title: req.body.thing.title,
+      description: req.body.thing.description,
+      imageUrl: url + '/images/' + req.file.filename,
+      price: req.body.thing.price,
+      userId: req.body.thing.userId
+    };
+  } 
+  else {
+    thing = {
+      _id: req.params.id,
+      title: req.body.title,
+      description: req.body.description,
+      imageUrl: req.body.imageUrl,
+      price: req.body.price,
+      userId: req.body.userId
+    };
+  }
+  
   Thing.updateOne( {_id: req.params.id} , thing)
   .then( () => {
     res.status(201).json({
@@ -56,20 +81,34 @@ exports.updateThing = (req, res, next) => {
   });
 }
 
+// DELETE
 exports.deleteThing = (req, res, next) => {
-  Thing.deleteOne({_id: req.params.id})
-  .then( () => {
-    res.status(200).json({
-      message: "Thing deleted!"
-    });
+  Thing.findOne({_id: req.params.id})
+  .then( (thing) => {
+    const filename = thing.imageUrl.split('/images/')[1];
+    fs.unlink('images/' + filename, () => {
+      Thing.deleteOne({_id: req.params.id})
+      .then( () => {
+        res.status(200).json({
+          message: "Thing deleted!"
+        });
+      })
+      .catch( (error) => {
+        res.status(400).json({
+          error: error
+        });
+      });
+    })
   })
   .catch( (error) => {
     res.status(400).json({
       error: error
     });
   });
+  
 };
 
+// GET (All things)
 exports.getAllThings = (req, res, next) => {
   Thing.find()
   .then( (things) => {
@@ -81,4 +120,3 @@ exports.getAllThings = (req, res, next) => {
     });
   })
 };
-
